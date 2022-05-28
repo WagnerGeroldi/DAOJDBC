@@ -1,4 +1,4 @@
-package program;
+package programSeller;
 
 import java.text.ParseException;
 
@@ -10,7 +10,6 @@ public class Delete {
 	public static void main(String[] args) throws ParseException {
 
 		SellerDao sellerDao = DaoFactory.createSellerDao();
-
 
 		sellerDao.deleteById(2);
 

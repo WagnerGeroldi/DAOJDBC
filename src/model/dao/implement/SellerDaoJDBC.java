@@ -25,7 +25,7 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 
 	@Override
-	public void insert(Seller department) {
+	public void insert(Seller seller) {
 
 		PreparedStatement preparedStatement = null;
 
@@ -35,11 +35,11 @@ public class SellerDaoJDBC implements SellerDao {
 					+ "(name, email, birthDate, baseSalary, department_id) " + "values " + "(?,?,?,?,?)",
 					Statement.RETURN_GENERATED_KEYS);
 
-			preparedStatement.setString(1, department.getName());
-			preparedStatement.setString(2, department.getEmail());
-			preparedStatement.setDate(3, new java.sql.Date(department.getBirthDate().getTime()));
-			preparedStatement.setDouble(4, department.getBaseSalary());
-			preparedStatement.setInt(5, department.getDepartment().getId());
+			preparedStatement.setString(1, seller.getName());
+			preparedStatement.setString(2, seller.getEmail());
+			preparedStatement.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
+			preparedStatement.setDouble(4, seller.getBaseSalary());
+			preparedStatement.setInt(5, seller.getDepartment().getId());
 
 			int rowsAffected = preparedStatement.executeUpdate();
 
@@ -66,7 +66,7 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 
 	@Override
-	public void update(Seller department) {
+	public void update(Seller seller) {
 
 		PreparedStatement preparedStatement = null;
 
@@ -75,12 +75,12 @@ public class SellerDaoJDBC implements SellerDao {
 			preparedStatement = connection.prepareStatement("UPDATE seller "
 					+ "SET name= ?, email= ?, birthDate= ?, baseSalary= ?, department_id= ? " + "WHERE id_seller = ?");
 
-			preparedStatement.setString(1, department.getName());
-			preparedStatement.setString(2, department.getEmail());
-			preparedStatement.setDate(3, new java.sql.Date(department.getBirthDate().getTime()));
-			preparedStatement.setDouble(4, department.getBaseSalary());
-			preparedStatement.setInt(5, department.getDepartment().getId());
-			preparedStatement.setInt(6, department.getId());
+			preparedStatement.setString(1, seller.getName());
+			preparedStatement.setString(2, seller.getEmail());
+			preparedStatement.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
+			preparedStatement.setDouble(4, seller.getBaseSalary());
+			preparedStatement.setInt(5, seller.getDepartment().getId());
+			preparedStatement.setInt(6, seller.getId());
 
 			preparedStatement.executeUpdate();
 
@@ -113,7 +113,6 @@ public class SellerDaoJDBC implements SellerDao {
 			} else {
 				System.out.println("Erro ao deletar!");
 			}
-
 
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
