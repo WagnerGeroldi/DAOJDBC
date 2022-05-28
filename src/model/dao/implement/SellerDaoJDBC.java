@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -22,7 +26,47 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public void insert(Seller department) {
-		// TODO Auto-generated method stub
+		
+		
+		PreparedStatement preparedStatement = null;
+
+		try {
+			connection = DB.getConnection();
+			preparedStatement = connection.prepareStatement(
+					"INSERT INTO seller " +
+					"(name, email, birthDate, baseSalary, department_id) " + 
+					"values " + 
+					"(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS );
+			
+			preparedStatement.setString(1, department.getName());
+			preparedStatement.setString(2, department.getEmail());
+			preparedStatement.setDate(3, new java.sql.Date(department.getBirthDate().getTime()));
+			preparedStatement.setDouble(4, department.getBaseSalary());
+			preparedStatement.setInt(5, department.getDepartment().getId());
+			
+			int rowsAffected = preparedStatement.executeUpdate();
+			
+			
+			if(rowsAffected > 0) {
+			 ResultSet rs = preparedStatement.getGeneratedKeys();
+			 
+			 while(rs.next()) {
+				 int id = rs.getInt(1);
+				 System.out.println("Pronto! linha adicionada: " + id);
+			 }
+			} else {
+				System.out.println("Nenhuma linha alterado");
+			}
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} catch (Exception e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+			DB.closeConnection();
+		}
+		
 
 	}
 
@@ -70,6 +114,78 @@ public class SellerDaoJDBC implements SellerDao {
 
 	}
 
+	@Override
+	public List<Seller> findByDepartment(Department department) {
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+
+		try {
+
+			preparedStatement = connection.prepareStatement("SELECT* " + "FROM seller INNER JOIN department "
+					+ "ON seller.department_id = department.id_department " + "WHERE department.id_department = ?");
+
+			preparedStatement.setInt(1, department.getId());
+
+			resultSet = preparedStatement.executeQuery();
+
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();
+
+			while (resultSet.next()) {
+				Department dep = map.get(resultSet.getInt("id_department"));
+
+				if (dep == null) {
+					dep = instanceOfDepartment(resultSet);
+					map.put(resultSet.getInt("id_department"), dep);
+				}
+				Seller seller = instanceOfSeller(resultSet, dep);
+				list.add(seller);
+			}
+			return list;
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+			DB.closeResultSet(resultSet);
+		}
+	}
+
+	@Override
+	public List<Seller> findAll() {
+		
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+
+		try {
+
+			preparedStatement = connection.prepareStatement("SELECT* " + "FROM seller INNER JOIN department "
+					+ "ON seller.department_id = department.id_department ");
+
+			resultSet = preparedStatement.executeQuery();
+
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();
+
+			while (resultSet.next()) {
+				Department dep = map.get(resultSet.getInt("id_department"));
+
+				if (dep == null) {
+					dep = instanceOfDepartment(resultSet);
+					map.put(resultSet.getInt("id_department"), dep);
+				}
+				Seller seller = instanceOfSeller(resultSet, dep);
+				list.add(seller);
+			}
+			return list;
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+			DB.closeResultSet(resultSet);
+		}
+
+	}
+
 	private Seller instanceOfSeller(ResultSet resultSet, Department dep) throws SQLException {
 
 		Seller seller = new Seller();
@@ -87,12 +203,6 @@ public class SellerDaoJDBC implements SellerDao {
 		dep.setId(resultSet.getInt("id_department"));
 		dep.setName(resultSet.getString("name_department"));
 		return dep;
-	}
-
-	@Override
-	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
