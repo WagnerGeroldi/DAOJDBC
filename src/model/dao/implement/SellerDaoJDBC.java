@@ -26,38 +26,34 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public void insert(Seller department) {
-		
-		
+
 		PreparedStatement preparedStatement = null;
 
 		try {
 			connection = DB.getConnection();
-			preparedStatement = connection.prepareStatement(
-					"INSERT INTO seller " +
-					"(name, email, birthDate, baseSalary, department_id) " + 
-					"values " + 
-					"(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS );
-			
+			preparedStatement = connection.prepareStatement("INSERT INTO seller "
+					+ "(name, email, birthDate, baseSalary, department_id) " + "values " + "(?,?,?,?,?)",
+					Statement.RETURN_GENERATED_KEYS);
+
 			preparedStatement.setString(1, department.getName());
 			preparedStatement.setString(2, department.getEmail());
 			preparedStatement.setDate(3, new java.sql.Date(department.getBirthDate().getTime()));
 			preparedStatement.setDouble(4, department.getBaseSalary());
 			preparedStatement.setInt(5, department.getDepartment().getId());
-			
+
 			int rowsAffected = preparedStatement.executeUpdate();
-			
-			
-			if(rowsAffected > 0) {
-			 ResultSet rs = preparedStatement.getGeneratedKeys();
-			 
-			 while(rs.next()) {
-				 int id = rs.getInt(1);
-				 System.out.println("Pronto! linha adicionada: " + id);
-			 }
+
+			if (rowsAffected > 0) {
+				ResultSet rs = preparedStatement.getGeneratedKeys();
+
+				while (rs.next()) {
+					int id = rs.getInt(1);
+					System.out.println("Pronto! linha adicionada: " + id);
+				}
 			} else {
 				System.out.println("Nenhuma linha alterado");
 			}
-			
+
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} catch (Exception e) {
@@ -66,19 +62,67 @@ public class SellerDaoJDBC implements SellerDao {
 			DB.closeStatement(preparedStatement);
 			DB.closeConnection();
 		}
-		
 
 	}
 
 	@Override
 	public void update(Seller department) {
-		// TODO Auto-generated method stub
+
+		PreparedStatement preparedStatement = null;
+
+		try {
+			connection = DB.getConnection();
+			preparedStatement = connection.prepareStatement("UPDATE seller "
+					+ "SET name= ?, email= ?, birthDate= ?, baseSalary= ?, department_id= ? " + "WHERE id_seller = ?");
+
+			preparedStatement.setString(1, department.getName());
+			preparedStatement.setString(2, department.getEmail());
+			preparedStatement.setDate(3, new java.sql.Date(department.getBirthDate().getTime()));
+			preparedStatement.setDouble(4, department.getBaseSalary());
+			preparedStatement.setInt(5, department.getDepartment().getId());
+			preparedStatement.setInt(6, department.getId());
+
+			preparedStatement.executeUpdate();
+
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} catch (Exception e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+			DB.closeConnection();
+		}
 
 	}
 
 	@Override
 	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
+
+		PreparedStatement preparedStatement = null;
+
+		try {
+			connection = DB.getConnection();
+			preparedStatement = connection.prepareStatement("DELETE from seller " + "WHERE id_seller = ?");
+
+			preparedStatement.setInt(1, id);
+
+			int confirm = preparedStatement.executeUpdate();
+
+			if (confirm != 0) {
+				System.out.println("Vendedor deletado com sucesso");
+			} else {
+				System.out.println("Erro ao deletar!");
+			}
+
+
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} catch (Exception e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+			DB.closeConnection();
+		}
 
 	}
 
@@ -152,7 +196,7 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public List<Seller> findAll() {
-		
+
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 
